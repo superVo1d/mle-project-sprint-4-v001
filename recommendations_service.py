@@ -145,7 +145,7 @@ async def mixed_recommendations(user_id: int, k: int = 10) -> List[int]:
 
     random.seed(42)
 
-    # Смешаем оффлайн и онлайн рекомендации (выбререм случайные k)
+    # Смешаем оффлайн- и онлайн-рекомендации (выбререм случайные k)
     return blend_lists(recommendations, random.sample(similar_items, k))
 
 @app.get("/recommendations_cold")
@@ -182,7 +182,7 @@ async def online_recommendations(user_id: int, k: int = 10) -> List[int]:
 
     # Удалим дубликаты
     similar_items = list(set(similar_items))
-    
+
     random.seed(42)
 
     # Выбререм случайные k
