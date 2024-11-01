@@ -37,6 +37,13 @@ class ItemAddRequest(BaseModel):
     user_id: int
     item_id: int
 
+@app.get("/health")
+async def health_check():
+    """
+    Health check
+    """
+    return {"status": "ok"}
+
 @app.post("/add")
 async def add_item(request: ItemAddRequest):
     """

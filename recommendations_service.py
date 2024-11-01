@@ -89,6 +89,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Recommendations Service", lifespan=lifespan)
 
+@app.get("/health")
+async def health_check():
+    """
+    Health check
+    """
+    return {"status": "ok"}
+
 @app.get("/recommendations")
 async def mixed_recommendations(user_id: int, k: int = 10) -> List[int]:
     """
