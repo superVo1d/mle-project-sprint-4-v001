@@ -21,7 +21,7 @@ uvicorn events_service:app --host "0.0.0.0"  --port 3001
 ```
 <Открыть новый терминал>
 source env_recsys_start/bin/activate
-python3 test_service.py
+python3 test_service.py > test_service.log 2>&1
 ```
 
 **Примечание**
