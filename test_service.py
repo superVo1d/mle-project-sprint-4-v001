@@ -7,7 +7,7 @@ EVENTS_SERVICE_URL = "http://0.0.0.0:3001"
 USER_ID = 0
 ITEMS = [795836, 6705392, 32947997]
 RECOMMENDATIONS_COUNT = 10
-
+ 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("test_service")
 
@@ -20,18 +20,22 @@ class TestRecommendationsService(unittest.TestCase):
     """
     Производит тестирования сервисов событий и рекомендаций
     """
+    test_index = 1
 
     def log_response(self, test_name, response, expected_code, expected_data=None):
         """
         Настраивает логи для тестирования
         """
-        logger.info(f"Test {test_name}")
+        logger.info(f"Test {self.test_index}: \"{test_name}\":")
         logger.info(f">>> Request URL: {response.request.url}")
         logger.info(f"<!> Expected: code={expected_code}, data={expected_data if expected_data is not None else '<any>'}")
         logger.info(f"<<< Response: code={response.status_code}, data={response.json()}")
         self.assertEqual(response.status_code, expected_code)
         if expected_data is not None:
             self.assertEqual(response.json(), expected_data)
+        logger.info(f"Test {self.test_index} PASSED!")
+        logger.info("----------------------------------------")
+        TestRecommendationsService.test_index += 1
 
     def test_health_check_recommendations(self):
         """
@@ -57,14 +61,13 @@ class TestRecommendationsService(unittest.TestCase):
                 json={"user_id": USER_ID, "item_id": item_id},
                 timeout=5
             )
-            self.log_response(f"Add Event for item {item_id}", response, 200)
 
         response = requests.get(
             f"{EVENTS_SERVICE_URL}/get", 
             params={"user_id": USER_ID},
             timeout=5
         )
-        self.log_response("Get Event History", response, 200)
+        self.log_response("Save Event History", response, 200)
         self.assertListEqual(response.json(), ITEMS)
 
     def test_get_cold_recommendations(self):
