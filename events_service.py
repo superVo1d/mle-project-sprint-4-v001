@@ -23,10 +23,10 @@ class EventStore:
 
     def get_items(self, user_id: int) -> List[int]:
         """
-        Возвращает историю пользователя user_id
+        Возвращает историю пользователя user_id (без дубликатов)
         """
         if user_id in self.store:
-            return self.store[user_id]
+            return list(dict.fromkeys(self.store[user_id]))
 
         return []
 

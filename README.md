@@ -7,7 +7,6 @@ python3 -m venv env_recsys_start
 source env_recsys_start/bin/activate
 pip install -r requirements.txt
 
-source env_recsys_start/bin/activate
 uvicorn recommendations_service:app --host "0.0.0.0"  --port 3000
 
 <Открыть новый терминал>
@@ -21,7 +20,7 @@ uvicorn events_service:app --host "0.0.0.0"  --port 3001
 ```
 <Открыть новый терминал>
 source env_recsys_start/bin/activate
-pytest test_service.py > test_service.log 2>&1
+python -m unittest test_service.py
 
 ```
 

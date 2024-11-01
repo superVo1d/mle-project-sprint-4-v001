@@ -152,6 +152,9 @@ async def mixed_recommendations(user_id: int, k: int = 10) -> List[int]:
 
     random.seed(42)
 
+    if len(similar_items) == 0:
+        return []
+
     # Смешаем оффлайн- и онлайн-рекомендации (выбререм случайные k)
     return blend_lists(recommendations, random.sample(similar_items, k))
 
