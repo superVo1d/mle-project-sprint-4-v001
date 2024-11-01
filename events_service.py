@@ -46,7 +46,7 @@ async def add_item(request: ItemAddRequest):
 
     return {"message": f"Item {request.item_id} added to user {request.user_id}."}
 
-@app.get("/users/{user_id}/", response_model=List[int])
+@app.get("/get", response_model=List[int])
 async def get_items(user_id: int) -> List[int]:
     """
     Возвращает историю пользователя user_id

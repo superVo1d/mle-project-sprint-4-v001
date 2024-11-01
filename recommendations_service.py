@@ -3,11 +3,12 @@ import requests
 from contextlib import asynccontextmanager
 from typing import List
 import pandas as pd
+import random
 from fastapi import FastAPI
 
 logger = logging.getLogger("uvicorn.error")
 
-EVENTS_SERVICE_URL = "http://0.0.0.0:8000"
+EVENTS_SERVICE_URL = "http://0.0.0.0:3001"
 
 class FeatureStore:
     def __init__(self):
@@ -32,6 +33,9 @@ class FeatureStore:
         self._recommendations.set_index('user_id', inplace=True, drop=True)
 
         self._popular = pd.read_parquet('top_popular.parquet')
+        self._popular = self._popular[['item_id']]
+        self._popular.reset_index(drop=True, inplace=True)
+        self._popular['score'] = range(1, len(self._popular) + 1)
 
         logger.info("Data is loaded.")
 
@@ -41,7 +45,7 @@ class FeatureStore:
         """
         try:
             i2i = self._similar_items.loc[item_id].head(min(k, 10))
-            i2i = i2i[["recomendations", "score"]].to_dict(orient="list")
+            i2i = i2i[["item_id", "score"]].to_dict(orient="list")
         except KeyError:
             logger.error("No recommendations found")
             i2i = {"item_id": [], "score": {}}
@@ -57,7 +61,7 @@ class FeatureStore:
             recs = recs[["item_id", "score"]].to_dict(orient="list")
         except KeyError:
             logger.error("No recommendations found")
-            recs = {"recomendations": [], "score": {}}
+            recs = {"item_id": [], "score": {}}
 
         return recs
 
@@ -67,10 +71,10 @@ class FeatureStore:
         """
         try:
             recs = self._popular.head(min(k, 10))
-            recs = recs[["recomendations", "score"]].to_dict(orient="list")
+            recs = recs[["item_id", "score"]].to_dict(orient="list")
         except KeyError:
             logger.error("No recommendations found")
-            recs = {"recomendations": [], "score": {}}
+            recs = {"item_id": [], "score": {}}
 
         return recs
 
@@ -96,7 +100,7 @@ async def mixed_recommendations(user_id: int, k: int = 10) -> List[int]:
     items = []
     try:
         params = {"user_id": user_id}
-        response = requests.post(EVENTS_SERVICE_URL + "/get", params=params, timeout=5)
+        response = requests.get(EVENTS_SERVICE_URL + "/get", params=params, timeout=5)
         items = response.json()
     except requests.exceptions.RequestException as e:
         print("Events service request error:", e)
@@ -104,13 +108,8 @@ async def mixed_recommendations(user_id: int, k: int = 10) -> List[int]:
     # Удалим повторяющиеся элементы
     items = list(set(items))
 
-    # Если у пользователя пустая история,
-    # то возвращаем ему топ популярных
-    if len(items) == 0:
-        return feature_store.get_popular_items(k).get("recomendations")
-
     # Достаем персональные рекомендации
-    recommendations = feature_store.get_personal_recommendations(user_id, k).get("recomendations")
+    recommendations = feature_store.get_personal_recommendations(user_id, k).get("item_id")
 
     def blend_lists(list1, list2):
         """
@@ -135,13 +134,27 @@ async def mixed_recommendations(user_id: int, k: int = 10) -> List[int]:
 
         return combined[:k]
 
-    # Для каждого объекта в истории пользователя найдем похожий
+    # Для каждого объекта в истории пользователя найдем похожие (выбререм случайные 10)
     similar_items = []
     for item_id in items:
-        similar_items.append(feature_store.get_similar_items(item_id=item_id, k = 1))
+        similar_item_id = feature_store.get_similar_items(item_id=item_id, k = k).get('item_id')
+        similar_items.extend(similar_item_id)
 
-    # Смешаем онлайн и оффлайн рекомендации
-    return blend_lists(recommendations, similar_items)
+    # Удалим дубликаты
+    similar_items = list(set(similar_items))
+
+    random.seed(42)
+
+    # Смешаем оффлайн и онлайн рекомендации (выбререм случайные k)
+    return blend_lists(recommendations, random.sample(similar_items, k))
+
+@app.get("/recommendations_cold")
+async def cold_recommendations(k: int = 10) -> List[int]:
+    """
+    Возвращает скисок рекомендаций длиной k для пользователя без истории взаимодействий
+    """
+
+    return feature_store.get_popular_items(k).get("item_id")
 
 @app.get("/recommendations_online")
 async def online_recommendations(user_id: int, k: int = 10) -> List[int]:
@@ -153,7 +166,7 @@ async def online_recommendations(user_id: int, k: int = 10) -> List[int]:
     items = []
     try:
         params = {"user_id": user_id}
-        response = requests.post(EVENTS_SERVICE_URL + "/get", params=params, timeout=5)
+        response = requests.get(EVENTS_SERVICE_URL + "/get", params=params, timeout=5)
         items = response.json()
     except requests.exceptions.RequestException as e:
         print("Events service request error:", e)
@@ -161,12 +174,19 @@ async def online_recommendations(user_id: int, k: int = 10) -> List[int]:
     # Удалим повторяющиеся элементы
     items = list(set(items))
 
-    # Для каждого объекта в истории пользователя найдем похожий
+    # Для каждого объекта в истории пользователя найдем похожие
     similar_items = []
     for item_id in items:
-        similar_items.append(feature_store.get_similar_items(item_id=item_id, k = 1))
+        similar_item_id = feature_store.get_similar_items(item_id=item_id, k = k).get('item_id')
+        similar_items.extend(similar_item_id)
 
-    return similar_items
+    # Удалим дубликаты
+    similar_items = list(set(similar_items))
+    
+    random.seed(42)
+
+    # Выбререм случайные k
+    return random.sample(similar_items, k)
 
 @app.get("/offline_recommendations")
 async def offline_recommendations(user_id: int, k: int = 10) -> List[int]:
@@ -174,4 +194,4 @@ async def offline_recommendations(user_id: int, k: int = 10) -> List[int]:
     Возвращает скисок персональных рекомендаций длиной k для user_id
     """
 
-    return feature_store.get_personal_recommendations(user_id, k).get("recomendations")
+    return feature_store.get_personal_recommendations(user_id, k).get("item_id")
