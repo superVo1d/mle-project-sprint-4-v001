@@ -1,0 +1,48 @@
+2024-11-01 20:54:50,102 - INFO - Test 1: "Save Event History":
+2024-11-01 20:54:50,103 - INFO - >>> Request URL: http://0.0.0.0:3001/get?user_id=0
+2024-11-01 20:54:50,103 - INFO - <!> Expected: code=200, data=<any>
+2024-11-01 20:54:50,103 - INFO - <<< Response: code=200, data=[795836, 6705392, 32947997]
+2024-11-01 20:54:50,103 - INFO - Test 1 PASSED!
+2024-11-01 20:54:50,103 - INFO - ----------------------------------------
+2024-11-01 20:54:50,106 - INFO - Test 2: "Get Cold Recommendations":
+2024-11-01 20:54:50,106 - INFO - >>> Request URL: http://0.0.0.0:3000/recommendations_cold?k=10
+2024-11-01 20:54:50,106 - INFO - <!> Expected: code=200, data=<any>
+2024-11-01 20:54:50,106 - INFO - <<< Response: code=200, data=[53404, 33311009, 178529, 35505245, 24692821, 795836, 6705392, 32947997, 37384, 45499814]
+2024-11-01 20:54:50,106 - INFO - Test 2 PASSED!
+2024-11-01 20:54:50,106 - INFO - ----------------------------------------
+2024-11-01 20:54:50,169 - INFO - Test 3: "Get Offline Recommendations":
+2024-11-01 20:54:50,170 - INFO - >>> Request URL: http://0.0.0.0:3000/offline_recommendations?user_id=0&k=10
+2024-11-01 20:54:50,170 - INFO - <!> Expected: code=200, data=<any>
+2024-11-01 20:54:50,170 - INFO - <<< Response: code=200, data=[27898772, 19722850, 6006252, 33308946, 10791880, 27077792, 29213451, 18860, 21101463, 597196]
+2024-11-01 20:54:50,170 - INFO - Test 3 PASSED!
+2024-11-01 20:54:50,170 - INFO - ----------------------------------------
+2024-11-01 20:54:50,178 - INFO - Test 4: "Get Online Recommendations":
+2024-11-01 20:54:50,178 - INFO - >>> Request URL: http://0.0.0.0:3000/recommendations_online?user_id=0&k=10
+2024-11-01 20:54:50,178 - INFO - <!> Expected: code=200, data=<any>
+2024-11-01 20:54:50,178 - INFO - <<< Response: code=200, data=[214489, 694683, 23102848, 24003296, 31746480, 14291759, 805089, 53404, 198009, 96079]
+2024-11-01 20:54:50,178 - INFO - Test 4 PASSED!
+2024-11-01 20:54:50,178 - INFO - ----------------------------------------
+2024-11-01 20:54:50,180 - INFO - Test 5: "Get Recommendations Missing Params":
+2024-11-01 20:54:50,180 - INFO - >>> Request URL: http://0.0.0.0:3000/recommendations
+2024-11-01 20:54:50,181 - INFO - <!> Expected: code=422, data=<any>
+2024-11-01 20:54:50,181 - INFO - <<< Response: code=422, data={'detail': [{'type': 'missing', 'loc': ['query', 'user_id'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.8/v/missing'}]}
+2024-11-01 20:54:50,181 - INFO - Test 5 PASSED!
+2024-11-01 20:54:50,181 - INFO - ----------------------------------------
+2024-11-01 20:54:50,246 - INFO - Test 6: "Get Recommendations Wrong User":
+2024-11-01 20:54:50,246 - INFO - >>> Request URL: http://0.0.0.0:3000/recommendations?user_id=-1&k=10
+2024-11-01 20:54:50,246 - INFO - <!> Expected: code=200, data=[]
+2024-11-01 20:54:50,246 - INFO - <<< Response: code=200, data=[]
+2024-11-01 20:54:50,246 - INFO - Test 6 PASSED!
+2024-11-01 20:54:50,246 - INFO - ----------------------------------------
+2024-11-01 20:54:50,249 - INFO - Test 7: "Health Check - Events":
+2024-11-01 20:54:50,249 - INFO - >>> Request URL: http://0.0.0.0:3001/health
+2024-11-01 20:54:50,249 - INFO - <!> Expected: code=200, data={'status': 'ok'}
+2024-11-01 20:54:50,249 - INFO - <<< Response: code=200, data={'status': 'ok'}
+2024-11-01 20:54:50,249 - INFO - Test 7 PASSED!
+2024-11-01 20:54:50,249 - INFO - ----------------------------------------
+2024-11-01 20:54:50,251 - INFO - Test 8: "Health Check - Recommendations":
+2024-11-01 20:54:50,251 - INFO - >>> Request URL: http://0.0.0.0:3000/health
+2024-11-01 20:54:50,252 - INFO - <!> Expected: code=200, data={'status': 'ok'}
+2024-11-01 20:54:50,252 - INFO - <<< Response: code=200, data={'status': 'ok'}
+2024-11-01 20:54:50,252 - INFO - Test 8 PASSED!
+2024-11-01 20:54:50,252 - INFO - ----------------------------------------

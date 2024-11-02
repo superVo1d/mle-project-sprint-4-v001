@@ -7,6 +7,9 @@ python3 -m venv env_recsys_start
 source env_recsys_start/bin/activate
 pip install -r requirements.txt
 
+# Загружаем данные
+python fetch_data.py
+
 uvicorn recommendations_service:app --host "0.0.0.0"  --port 3000
 
 <Открыть новый терминал>
